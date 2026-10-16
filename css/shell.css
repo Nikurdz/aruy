@@ -1,0 +1,197 @@
+/* Aruy · Shell adaptativo (equivale a NavigationSuiteScaffold):
+   barra inferior en compacto (<600), riel en mediano (600–839) y panel lateral en expandido (≥840).
+   Los cambios de layout usan container queries sobre .app, así también funcionan en la vista de dispositivo. */
+.stage { position: fixed; inset: 0; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; background: var(--c-surface); }
+
+.app {
+  container: app / size;
+  position: relative;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--c-surface);
+  color: var(--c-on-surface);
+  /* una vista no debe poder tapar el contenedor: cualquier hoja o aviso se mide contra .app */
+}
+
+.shell {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "main" "nav";
+}
+.shell[data-nav="none"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "main"; }
+.shell[data-nav="none"] .nav { display: none; }
+
+.column { grid-area: main; position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+
+.screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-outline-variant) transparent;
+  padding-bottom: var(--safe-b);
+  view-transition-name: screen;
+}
+.shell:not([data-nav="none"]) .screen { padding-bottom: 0; }
+
+.page {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: 8px var(--gutter) 32px;
+}
+.page--narrow { max-width: 560px; }
+.page--flush { padding-inline: 0; }
+.stack { display: flex; flex-direction: column; gap: var(--gap, 16px); }
+.stack > *, .page > * { min-width: 0; }   /* un carrusel horizontal no debe ensanchar la columna */
+.stack-s { --gap: 8px; }
+.stack-l { --gap: 24px; }
+.row-flex { display: flex; align-items: center; gap: var(--gap, 12px); }
+.spacer { flex: 1 1 auto; }
+
+/* ---------- Barra superior ---------- */
+.appbar {
+  position: relative; z-index: 6;
+  display: flex; align-items: center; gap: 4px;
+  min-height: calc(var(--appbar-h) + var(--safe-t));
+  padding: var(--safe-t) 8px 0 8px;
+  background: var(--c-surface);
+  view-transition-name: appbar;
+  transition: background-color var(--dur-m) var(--ease), box-shadow var(--dur-m) var(--ease);
+}
+.appbar:empty { display: none; }
+.appbar[data-scrolled="true"] { background: var(--c-surface-container); box-shadow: 0 1px 0 var(--c-outline-variant); }
+.appbar-title { flex: 1 1 auto; min-width: 0; padding-inline: 8px; }
+.appbar-title.t-title-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.appbar-brand { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; text-decoration: none; color: var(--c-on-surface); min-height: var(--tap); }
+.appbar-brand .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.375rem; letter-spacing: -.02em; }
+.appbar-actions { display: flex; align-items: center; gap: 0; margin-left: auto; }
+.column[data-bar="none"] .appbar { display: none; }
+
+/* Barra transparente sobre una foto (detalle del servicio) */
+.column[data-bar="overlay"] .appbar {
+  position: absolute; inset: 0 0 auto 0; background: transparent; box-shadow: none; pointer-events: none;
+  background-image: linear-gradient(to bottom, rgb(10 12 36 / .5), transparent);
+}
+.column[data-bar="overlay"] .appbar > * { pointer-events: auto; }
+.column[data-bar="overlay"] .appbar .icon-btn { color: #fff; background: rgb(10 12 36 / .45); }
+.column[data-bar="overlay"] .appbar .icon-btn::before { background: #fff; }
+.column[data-bar="overlay"] .appbar-title { display: none; }
+.column[data-bar="overlay"] .appbar .appbar-actions { gap: 8px; margin-right: 4px; }
+
+/* Aviso de conexión */
+.banner {
+  display: flex; align-items: center; gap: 10px; padding: 10px var(--gutter);
+  background: var(--c-inverse-surface); color: var(--c-inverse-on-surface); font-size: .9375rem; font-weight: 600;
+}
+.banner .ic { flex: none; }
+
+/* ---------- Navegación ---------- */
+.nav {
+  grid-area: nav; z-index: 7;
+  display: flex;
+  background: var(--c-surface-container);
+  padding-bottom: var(--safe-b);
+}
+.nav-brand, .nav-foot { display: none; }
+.nav-list { display: flex; flex: 1; min-width: 0; }
+.nav-item {
+  position: relative; flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: calc(var(--nav-h) - 8px); padding: 12px 4px 8px;
+  color: var(--c-on-surface-variant); text-decoration: none;
+  font-size: .875rem; font-weight: 600; line-height: 1.2;
+}
+.nav-ind {
+  position: relative; display: grid; place-items: center;
+  width: 64px; height: 32px; border-radius: var(--r-full);
+  transition: background-color var(--dur-m) var(--ease);
+}
+.nav-ind::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity var(--dur-s); }
+.nav-item:hover .nav-ind::before { opacity: .08; }
+.nav-item:active .nav-ind::before { opacity: .14; }
+.nav-item[aria-current="page"] { color: var(--c-on-surface); font-weight: 800; }
+.nav-item[aria-current="page"] .nav-ind { background: var(--c-secondary-container); color: var(--c-on-secondary-container); }
+.nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-badge {
+  position: absolute; top: -2px; right: 8px; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: var(--c-secondary); color: var(--c-on-secondary); font-size: .875rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+
+@container app (min-width: 600px) {
+  .shell { grid-template-columns: var(--rail-w) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); grid-template-areas: "nav main"; }
+  .nav {
+    flex-direction: column; align-items: stretch; padding: calc(12px + var(--safe-t)) 0 12px; padding-left: var(--safe-l);
+    background: var(--c-surface); border-right: 1px solid var(--c-outline-variant);
+  }
+  .nav-brand { display: flex; align-items: center; justify-content: center; min-height: 56px; margin-bottom: 8px; }
+  .nav-brand .wordmark { display: none; }
+  .nav-list { flex-direction: column; flex: 0 0 auto; gap: 12px; }
+  .nav-item { flex: none; min-height: 64px; padding: 6px 4px; }
+}
+@container app (min-width: 840px) {
+  .shell { grid-template-columns: var(--drawer-w) minmax(0, 1fr); }
+  .nav { padding: calc(16px + var(--safe-t)) 12px 16px; align-items: stretch; }
+  .nav-brand { justify-content: flex-start; gap: 12px; padding: 0 16px; margin-bottom: 16px; }
+  .nav-brand .wordmark { display: inline; font-family: var(--font-display); font-weight: 800; font-size: 1.625rem; letter-spacing: -.02em; }
+  .nav-list { gap: 4px; }
+  .nav-item { flex-direction: row; justify-content: flex-start; gap: 12px; min-height: 56px; padding: 0 16px; border-radius: var(--r-full); font-size: 1rem; }
+  .nav-ind { width: 24px; height: 24px; border-radius: 0; background: none !important; }
+  .nav-ind::before { display: none; }
+  .nav-item[aria-current="page"] { background: var(--c-secondary-container); color: var(--c-on-secondary-container); }
+  .nav-item:hover:not([aria-current="page"]) { background: color-mix(in srgb, var(--c-on-surface) 8%, transparent); }
+  .nav-label { flex: 1; }
+  .nav-badge { position: static; }
+  .nav-foot { display: block; margin-top: auto; padding: 16px; color: var(--c-on-surface-variant); font-size: .875rem; }
+}
+
+/* Celular en horizontal u otras pantallas bajas: más espacio útil */
+@container app (max-height: 480px) {
+  :root { --appbar-h: 52px; }
+  .nav-item { min-height: 56px; }
+  .nav-brand { min-height: 40px; }
+  .nav-list { gap: 4px; }
+}
+@container app (max-width: 599px) and (max-height: 480px) {
+  .nav-item { min-height: 52px; padding: 4px; }
+}
+
+/* Capas superpuestas (hojas, avisos) dentro de .app */
+.layer { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
+.layer > * { pointer-events: auto; }
+.snack-layer { z-index: 60; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding: 0 12px calc(var(--snack-bottom, 0px) + 12px + var(--safe-b)); }
+.snack-layer > * { pointer-events: auto; }
+
+/* ---------- Transiciones entre pantallas (View Transitions) ---------- */
+::view-transition-group(*) { animation-duration: var(--dur-m); animation-timing-function: var(--ease); }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+html[data-dir="push"]::view-transition-old(screen) { animation: vt-out-left var(--dur-m) var(--ease) both; }
+html[data-dir="push"]::view-transition-new(screen) { animation: vt-in-right var(--dur-m) var(--ease) both; }
+html[data-dir="pop"]::view-transition-old(screen)  { animation: vt-out-right var(--dur-m) var(--ease) both; }
+html[data-dir="pop"]::view-transition-new(screen)  { animation: vt-in-left var(--dur-m) var(--ease) both; }
+html[data-dir="tab"]::view-transition-old(screen)  { animation: vt-fade-out 110ms linear both; }
+html[data-dir="tab"]::view-transition-new(screen)  { animation: vt-fade-in 220ms var(--ease) 60ms both; }
+@keyframes vt-out-left  { to { transform: translateX(-28px); opacity: 0; } }
+@keyframes vt-in-right  { from { transform: translateX(36px); opacity: 0; } }
+@keyframes vt-out-right { to { transform: translateX(36px); opacity: 0; } }
+@keyframes vt-in-left   { from { transform: translateX(-28px); opacity: 0; } }
+@keyframes vt-fade-out  { to { opacity: 0; } }
+@keyframes vt-fade-in   { from { opacity: 0; } }
+
+/* Vista de dispositivo (solo en pantallas grandes, desde el panel de demostración) */
+@media (min-width: 1000px) and (min-height: 760px) {
+  html[data-device] .stage { background: radial-gradient(circle at 50% 30%, var(--c-surface-high), var(--c-surface-container)); }
+  html[data-device] .app {
+    width: var(--dev-w); height: min(var(--dev-h), calc(100dvh - 40px));
+    border-radius: 38px; border: 10px solid #0b0d22; box-shadow: 0 30px 80px rgb(10 12 36 / .45);
+  }
+  html[data-device="phone"] { --dev-w: 412px; --dev-h: 915px; }
+  html[data-device="fold"]  { --dev-w: 700px; --dev-h: 860px; }
+  html[data-device="tablet"] { --dev-w: 900px; --dev-h: 1100px; }
+}

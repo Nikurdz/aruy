@@ -1,0 +1,94 @@
+/* Aruy · Tokens de diseño.
+   Estructura Material 3 (roles de color, forma, tipografía, movimiento) con identidad andina propia:
+   añil, grana de cochinilla y maíz sobre superficies frías (lana). Claro y oscuro con light-dark(). */
+:root {
+  color-scheme: light dark;
+
+  /* Marca (referencia; las pantallas usan los roles de abajo) */
+  --anil: #2B3990;
+  --anil-noche: #14173A;
+  --grana: #B0235B;
+  --maiz: #F2B52E;
+  --jade: #0B7A5C;
+
+  /* Roles de color */
+  --c-primary: light-dark(#2B3990, #BAC3FF);
+  --c-on-primary: light-dark(#FFFFFF, #0E1766);
+  --c-primary-container: light-dark(#E0E3FF, #2B3990);
+  --c-on-primary-container: light-dark(#0D1558, #DEE1FF);
+
+  --c-secondary: light-dark(#B0235B, #FFB1CA);
+  --c-on-secondary: light-dark(#FFFFFF, #5F0F33);
+  --c-secondary-container: light-dark(#FFD9E5, #7E1A45);
+  --c-on-secondary-container: light-dark(#4A0522, #FFD9E5);
+
+  --c-tertiary-container: light-dark(#FFE6A8, #5C4300);
+  --c-on-tertiary-container: light-dark(#3A2800, #FFE0A0);
+  --c-star: light-dark(#B26A00, #F2B52E);
+
+  --c-ok: light-dark(#0B7A5C, #6FD9B6);
+  --c-ok-container: light-dark(#CFF3E6, #0D4D3B);
+  --c-on-ok-container: light-dark(#04392A, #CFF3E6);
+
+  --c-error: light-dark(#B3261E, #FFB4AB);
+  --c-on-error: light-dark(#FFFFFF, #690005);
+  --c-error-container: light-dark(#F9DEDC, #93000A);
+  --c-on-error-container: light-dark(#410E0B, #FFDAD6);
+
+  --c-surface: light-dark(#F7F6FC, #101331);
+  --c-surface-lowest: light-dark(#FFFFFF, #0B0D25);
+  --c-surface-low: light-dark(#F1F0F9, #161A3D);
+  --c-surface-container: light-dark(#EBEAF5, #1B1F47);
+  --c-surface-high: light-dark(#E4E3F0, #252A55);
+  --c-surface-highest: light-dark(#DDDCEB, #30355F);
+  --c-on-surface: light-dark(#14173A, #E5E6FA);
+  --c-on-surface-variant: light-dark(#4A4D6B, #BDC0DD);
+  --c-outline: light-dark(#767999, #8E91B1);
+  --c-outline-variant: light-dark(#C8CAE0, #3B4069);
+  --c-scrim: rgb(10 12 36 / .52);
+  --c-inverse-surface: light-dark(#262A52, #E5E6FA);
+  --c-inverse-on-surface: light-dark(#F1F0FF, #262A52);
+  --c-inverse-primary: light-dark(#BAC3FF, #2B3990);
+
+  --c-wa: #15803D;          /* botón de WhatsApp: texto blanco 5:1 en claro y oscuro */
+  --c-wa-pressed: #166534;
+
+  /* Forma (radios por jerarquía) */
+  --r-xs: 4px; --r-s: 8px; --r-m: 12px; --r-l: 16px; --r-xl: 28px; --r-full: 999px;
+
+  /* Tipografía */
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+
+  /* Medidas (RNF: objetivos táctiles de al menos 48 px) */
+  --tap: 48px;
+  --appbar-h: 64px;
+  --nav-h: 80px;
+  --rail-w: 88px;
+  --drawer-w: 288px;
+  --gutter: 16px;
+  --content-max: 1040px;
+
+  /* Movimiento */
+  --ease: cubic-bezier(.2, 0, 0, 1);
+  --ease-out: cubic-bezier(.05, .7, .1, 1);
+  --dur-s: 140ms; --dur-m: 260ms; --dur-l: 420ms;
+
+  /* Elevación (tonal + una sombra discreta solo en hojas y botón flotante) */
+  --shadow-float: 0 6px 18px rgb(10 12 36 / .22), 0 1px 3px rgb(10 12 36 / .2);
+  --shadow-sheet: 0 -10px 40px rgb(10 12 36 / .28);
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}
+
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Tamaño de texto elegido por la persona (Ajustes). Todo está en rem. */
+:root[data-text="large"] { font-size: 112.5%; }
+:root[data-text="xlarge"] { font-size: 131.25%; }
+
+@media (min-width: 600px) { :root { --gutter: 24px; } }

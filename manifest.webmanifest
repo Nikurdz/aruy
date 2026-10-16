@@ -1,0 +1,15 @@
+{
+  "name": "Aruy",
+  "short_name": "Aruy",
+  "description": "Encuentra a quien necesitas, cerca de ti. Servicios del hogar, belleza, bienestar y más en Quito.",
+  "lang": "es-EC",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101331",
+  "theme_color": "#F7F6FC",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

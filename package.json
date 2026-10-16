@@ -1,0 +1,17 @@
+{
+  "name": "aruy-prototipo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aruy · Prototipo de interfaz móvil (HTML, CSS y JavaScript puros). Programación Móvil, PUCE.",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node tests/e2e.mjs && node tests/responsive.mjs && node tests/a11y.mjs",
+    "test:e2e": "node tests/e2e.mjs",
+    "test:responsive": "node tests/responsive.mjs",
+    "test:a11y": "node tests/a11y.mjs",
+    "figuras": "node tools/capturar-figuras.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.56.1"
+  }
+}
