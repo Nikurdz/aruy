@@ -44,9 +44,10 @@
       var u = AR.session.user();
       return html`<div class="page home stack stack-l">
         <header class="greet">
-          <h1 class="t-display">Hola, ${U.firstName(u.nombre)}</h1>
+          <h1 class="t-display">${u.guest ? "Hola" : "Hola, " + U.firstName(u.nombre)}</h1>
           <p class="t-body-l muted">¿Qué servicio necesitas hoy?</p>
         </header>
+        ${u.guest ? html`<div class="nudge guest-note">${icon("lock")}<p class="t-body-m"><b>Estás explorando sin cuenta.</b> Crea una para ver precios, calificaciones y contactar.</p><a class="btn btn-soft" href="#/registro">Crear cuenta</a></div>` : ""}
         <a class="searchfield" href="#/buscar?foco=1" aria-label="Buscar servicios">${icon("search")}<span>Busca plomero, manicure, limpieza…</span></a>
         <section aria-labelledby="h-cat" class="bleed">
           <div class="section-head pad"><h2 class="t-title-l" id="h-cat">Categorías</h2></div>
@@ -68,6 +69,7 @@
             <div class="section-head pad"><h2 class="t-title-l" id="h-now">Disponibles ahora cerca de ti</h2><a class="btn btn-text" href="#/buscar?ahora=1">Ver todos</a></div>
             <div class="hscroll">${disponibles.map(UI.serviceCard)}</div>
           </section>
+          ${UI.ad(UI.pickAd("", "home"))}
           <section aria-labelledby="h-top">
             <div class="section-head"><h2 class="t-title-l" id="h-top">Mejor valorados</h2><a class="btn btn-text" href="#/buscar?orden=rating">Ver todos</a></div>
             <div class="list-flat">${mejores.map(UI.serviceRow)}</div>

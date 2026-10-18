@@ -58,7 +58,7 @@
       }
       root.querySelector("#pf-out").addEventListener("click", function () {
         UI.confirm({ title: "¿Cerrar sesión?", text: "Tus favoritos y tu historial se quedan guardados en este teléfono.", ok: "Cerrar sesión" }).then(function (yes) {
-          if (!yes) return; AR.session.logout(); AR.router.go("#/login", { replace: true });
+          if (!yes) return; AR.session.logout(); AR.router.go("#/bienvenida", { replace: true });
         });
       });
       root.querySelector("#pf-photo").addEventListener("click", function () { changePhoto(); });

@@ -5,10 +5,10 @@
 import { start, newPage, open, go, settled } from "./lib.mjs";
 
 const env = await start();
-const ROUTES = [["#/login", null], ["#/registro", null], ["#/registro?paso=2&rol=contratante", null], ["#/inicio", "contratante"], ["#/buscar", "contratante"], ["#/buscar?vista=mapa", "contratante"],
+const ROUTES = [["#/bienvenida", null], ["#/login", null], ["#/registro", null], ["#/registro?paso=2&rol=contratante", null], ["#/inicio", "contratante"], ["#/buscar", "contratante"], ["#/buscar?vista=mapa", "contratante"],
   ["#/servicio/s_p20_1", "contratante"], ["#/prestador/p20", "contratante"], ["#/guardados", "contratante"], ["#/guardados?tab=historial", "contratante"], ["#/perfil", "contratante"],
   ["#/ajustes", "contratante"], ["#/permisos", "contratante"], ["#/privacidad", "contratante"], ["#/normas", "contratante"], ["#/reportes", "contratante"], ["#/eliminar", "contratante"],
-  ["#/panel", "prestador"], ["#/servicios", "prestador"], ["#/portafolio", "prestador"], ["#/servicios/nuevo", "prestador"], ["#/perfil/editar", "prestador"]];
+  ["#/inicio", "invitado"], ["#/buscar", "invitado"], ["#/panel", "prestador"], ["#/servicios", "prestador"], ["#/portafolio", "prestador"], ["#/servicios/nuevo", "prestador"], ["#/perfil/editar", "prestador"]];
 
 /* ---- Revisión dentro de la página ---- */
 function inspect() {

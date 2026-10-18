@@ -39,32 +39,62 @@ AR.ui = (function () {
   }
 
   /* ---------- Servicios ---------- */
+  function isGuest() { var u = AR.session.user(); return !!(u && u.guest); }
+
+  /* Invitado: nombre, calificación y precio se muestran difuminados con texto de relleno (los datos reales no llegan a la pantalla) */
+  var LOCK_NOTE = "Disponible al crear tu cuenta";
+  function lockedBy() { return html`<span class="svc-by"><span class="lock" aria-hidden="true">Nombre Apellido</span></span>`; }
+  function lockedMeta(s) { return html`<span class="svc-meta"><span class="lock" aria-hidden="true">${icon("star")}4,8 (30)</span>${s.dist != null ? html`<span class="meta-d">${icon("pin", "ic-s")}${U.dist(s.dist)}</span>` : ""}</span>`; }
+  function lockedPrice() { return html`<span class="svc-foot"><span class="lock" aria-hidden="true"><b>Desde $00</b> por servicio</span><span class="sr-only">${LOCK_NOTE}</span></span>`; }
+  function heartLocked(name) { return html`<button type="button" class="icon-btn fav" data-fav="x" aria-label="Guardar en favoritos (necesitas una cuenta)">${icon("heart")}</button>`; }
+
   function serviceRow(s) {
-    var p = s.prestador, fav = AR.repo.esFavorito(p.id), cat = AR.catalog.cat(s.categoria);
-    var label = s.titulo + ", " + p.nombre + (p.rating != null ? ", " + U.dec1(p.rating) + " de 5" : "") + (s.precioReferencial != null ? ", desde " + U.money(s.precioReferencial) : "");
-    return html`<article class="svc-row">
+    var p = s.prestador, g = isGuest(), fav = !g && AR.repo.esFavorito(p.id);
+    var label = g ? s.titulo + ". Crea tu cuenta para ver los detalles" : s.titulo + ", " + p.nombre + (p.rating != null ? ", " + U.dec1(p.rating) + " de 5" : "") + (s.precioReferencial != null ? ", desde " + U.money(s.precioReferencial) : "");
+    return html`<article class="svc-row ${g ? "is-locked" : ""}">
       <a class="svc-main" href="#/servicio/${s.id}" data-hero-id="${s.id}" aria-label="${label}">
-        <span class="media svc-thumb" data-hero="${s.id}" style="--ar:1">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto de ejemplo de " + s.titulo, "", 240, 240)}</span>
+        <span class="media svc-thumb" data-hero="${s.id}" style="--ar:1">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto ilustrativa: " + s.titulo, "", 240, 240)}</span>
         <span class="svc-text">
           <b class="svc-title clamp-1">${s.titulo}</b>
-          <span class="svc-by"><span class="clamp-1">${p.nombre}</span>${verified(p)}</span>
-          <span class="svc-meta">${rating(p)}${s.dist != null ? html`<span class="meta-d">${icon("pin", "ic-s")}${U.dist(s.dist)}</span>` : ""}</span>
-          <span class="svc-foot">${price(s)}${s.estado === "en_revision" ? "" : ""}</span>
+          ${g ? lockedBy() : html`<span class="svc-by"><span class="clamp-1">${p.nombre}</span>${verified(p)}</span>`}
+          ${g ? lockedMeta(s) : html`<span class="svc-meta">${rating(p)}${s.dist != null ? html`<span class="meta-d">${icon("pin", "ic-s")}${U.dist(s.dist)}</span>` : ""}</span>`}
+          ${g ? lockedPrice() : html`<span class="svc-foot">${price(s)}</span>`}
         </span>
       </a>
-      ${heart(p.id, fav, p.nombre)}
+      ${g ? heartLocked() : heart(p.id, fav, p.nombre)}
     </article>`;
   }
 
   function serviceCard(s) {
-    var p = s.prestador;
-    return html`<a class="svc-card" href="#/servicio/${s.id}" data-hero-id="${s.id}" aria-label="${s.titulo}, ${p.nombre}, desde ${U.money(s.precioReferencial)}">
-      <span class="media" data-hero="${s.id}">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto de ejemplo de " + s.titulo, "", 480, 360)}
+    var p = s.prestador, g = isGuest();
+    return html`<a class="svc-card ${g ? "is-locked" : ""}" href="#/servicio/${s.id}" data-hero-id="${s.id}" aria-label="${g ? s.titulo + ". Crea tu cuenta para ver los detalles" : s.titulo + ", " + p.nombre + ", desde " + U.money(s.precioReferencial)}">
+      <span class="media" data-hero="${s.id}">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto ilustrativa: " + s.titulo, "", 480, 360)}
         <span class="media-chip">${avail(p)}</span></span>
       <b class="clamp-2 svc-card-title">${s.titulo}</b>
-      <span class="svc-by"><span class="clamp-1">${p.nombre}</span>${verified(p)}</span>
-      <span class="svc-meta">${rating(p)}${s.dist != null ? html`<span class="meta-d">${icon("pin", "ic-s")}${U.dist(s.dist)}</span>` : ""}</span>
+      ${g ? lockedBy() : html`<span class="svc-by"><span class="clamp-1">${p.nombre}</span>${verified(p)}</span>`}
+      ${g ? lockedMeta(s) : html`<span class="svc-meta">${rating(p)}${s.dist != null ? html`<span class="meta-d">${icon("pin", "ic-s")}${U.dist(s.dist)}</span>` : ""}</span>`}
     </a>`;
+  }
+
+  /* ---------- Anuncios de auspiciantes: discretos, rotulados y cerrables ---------- */
+  var ADS_KEY = "aruy.ads.off";
+  function hiddenAds() { try { return JSON.parse(sessionStorage.getItem(ADS_KEY) || "[]"); } catch (e) { return []; } }
+  function hideAd(id) { try { var h = hiddenAds(); if (h.indexOf(id) < 0) h.push(id); sessionStorage.setItem(ADS_KEY, JSON.stringify(h)); } catch (e) { /* sin sessionStorage */ } }
+  /** Elige un auspiciante afín a la categoría (o uno estable por semilla). Devuelve null si ya se ocultaron todos. */
+  function pickAd(catId, seed) {
+    var off = hiddenAds(), list = AR.seed.auspiciantes.filter(function (a) { return off.indexOf(a.id) < 0; });
+    if (!list.length) return null;
+    var rel = list.filter(function (a) { return catId && a.cats.indexOf(catId) >= 0; }), pool = rel.length ? rel : list;
+    return pool[U.hash(seed || "ad") % pool.length];
+  }
+  function ad(a) {
+    if (!a) return "";
+    return html`<aside class="ad" aria-label="Publicidad: ${a.nombre}">
+      <span class="ad-logo" data-tone="${a.tono}" aria-hidden="true">${a.sigla}</span>
+      <span class="ad-body"><span class="ad-tag">Auspiciado</span><b class="ad-name">${a.nombre}</b><span class="ad-text clamp-2">${a.texto}</span>
+        <button type="button" class="link-btn" data-ad-why>¿Por qué veo esto?</button></span>
+      <button type="button" class="icon-btn" data-ad-close="${a.id}" aria-label="Ocultar el anuncio de ${a.nombre}">${icon("close", "ic-s")}</button>
+    </aside>`;
   }
 
   function categoryTile(c) {
@@ -218,6 +248,7 @@ AR.ui = (function () {
   }
 
   return {
+    ad: ad, pickAd: pickAd, hideAd: hideAd, isGuest: isGuest,
     avatar: avatar, rating: rating, stars: stars, verified: verified, avail: avail, price: price, heart: heart,
     serviceRow: serviceRow, serviceCard: serviceCard, categoryTile: categoryTile,
     art: art, empty: empty, errorState: errorState, loading: loading, skelRows: skelRows, skelCards: skelCards, paint: paint,

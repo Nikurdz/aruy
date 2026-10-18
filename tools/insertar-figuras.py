@@ -14,14 +14,14 @@ FIG = os.path.join(ROOT, "docs", "figuras")
 
 FIGURAS = [
     {
-        "pantalla": "Pantalla 1", "archivo": "figura-1-login.png", "titulo": "Pantalla de login en modo claro y oscuro",
-        "alt": "Pantalla de inicio de sesión de Aruy en un teléfono, en modo claro y en modo oscuro, con la banda de tejido, los campos de correo y contraseña y las cuentas de ejemplo.",
-        "texto": ("La Figura 1 presenta la pantalla de inicio de sesión de Aruy, desarrollada como prototipo de interfaz con HTML, CSS y JavaScript. "
-                  "La persona ingresa su correo y su contraseña (funcionalidad 1) o recupera su contraseña si la olvidó. Quien aún no tiene cuenta "
-                  "elige si usará Aruy como prestador de servicios o como contratante (funcionalidad 2) y confirma su cuenta con un código de verificación "
-                  "(funcionalidad 14). La banda de tejido superior es el elemento visual de la marca, los campos y botones miden al menos 48 dp y la pantalla "
-                  "cambia entre modo claro y oscuro con la estructura de Material Design 3."),
-        "ancho_in": 3.8,
+        "pantalla": "Pantalla 1", "archivo": "figura-1-login.png", "titulo": "Pantallas de bienvenida y de inicio de sesión",
+        "alt": "Pantalla de bienvenida de Aruy con fotos de trabajos, una breve presentación y los botones Crear cuenta e Iniciar sesión; la pantalla de inicio de sesión con las cuentas de ejemplo; y la bienvenida en modo oscuro.",
+        "texto": ("La Figura 1 presenta la primera pantalla de Aruy, desarrollada como prototipo de interfaz con HTML, CSS y JavaScript. "
+                  "Explica en pocas líneas qué es Aruy y pregunta si la persona quiere crear una cuenta o iniciar sesión; también permite explorar sin cuenta, con datos limitados. "
+                  "Al elegir iniciar sesión se muestran las cuentas de ejemplo (un contratante y una prestadora) y, aparte, el formulario con correo y contraseña (funcionalidad 1). "
+                  "Quien crea una cuenta elige su rol (funcionalidad 2) y la confirma con un código de verificación (funcionalidad 14). La banda de tejido es el elemento visual de la marca, "
+                  "los botones miden al menos 48 dp y la pantalla cambia entre modo claro y oscuro con la estructura de Material Design 3."),
+        "ancho_in": 6.2,
     },
     {
         "pantalla": "Pantalla 2", "archivo": "figura-2-home-estados.png", "titulo": "Pantalla Home con los estados Loading, Success y Error",
@@ -63,7 +63,7 @@ FIGURAS = [
 
 INTRO = ("Las Figuras 1 a 5 presentan los bosquejos de las cinco pantallas principales de Aruy, obtenidos del prototipo de interfaz desarrollado con HTML, CSS y JavaScript. "
          "Todas siguen Material Design 3, con modo claro y oscuro y áreas táctiles de al menos 48 dp.")
-NOTA = "Capturas del prototipo de interfaz de Aruy en un teléfono de 412 × 915 dp, equivalente a un Pixel 8. Los datos mostrados son de ejemplo. Elaboración propia."
+NOTA = "Capturas del prototipo de interfaz de Aruy en un teléfono de 412 × 915 dp, equivalente a un Pixel 8. Los datos son de ejemplo y las fotografías de trabajos son ilustrativas (Unsplash). Elaboración propia."
 
 
 def esc(s):

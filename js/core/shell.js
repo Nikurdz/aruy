@@ -12,6 +12,11 @@ AR.shell = (function () {
       { id: "guardados", href: "#/guardados", label: "Guardados", icon: "heart" },
       { id: "perfil", href: "#/perfil", label: "Perfil", icon: "user" }
     ],
+    invitado: [
+      { id: "inicio", href: "#/inicio", label: "Inicio", icon: "home" },
+      { id: "buscar", href: "#/buscar", label: "Buscar", icon: "search" },
+      { id: "cuenta", href: "#/registro", label: "Crear cuenta", icon: "user" }
+    ],
     prestador: [
       { id: "panel", href: "#/panel", label: "Panel", icon: "dashboard" },
       { id: "servicios", href: "#/servicios", label: "Servicios", icon: "briefcase" },
@@ -34,7 +39,7 @@ AR.shell = (function () {
         return html`<a class="nav-item" href="${n.href}" data-nav="${n.id}" ${n.id === activeId ? html`aria-current="page"` : ""}>
           <span class="nav-ind">${icon(n.id === activeId && n.icon === "heart" ? "heart-fill" : n.icon)}</span><span class="nav-label">${n.label}</span></a>`;
       })}</div>
-      <div class="nav-foot"><b>${U.firstName(user.nombre)}</b><br>${user.rol === "prestador" ? "Prestador de servicios" : "Contratante"}</div>`);
+      <div class="nav-foot"><b>${U.firstName(user.nombre)}</b><br>${user.rol === "prestador" ? "Prestador de servicios" : user.guest ? "Sin cuenta" : "Contratante"}</div>`);
     syncSnackOffset();
   }
 

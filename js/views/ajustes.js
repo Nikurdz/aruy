@@ -200,7 +200,7 @@
         e.preventDefault();
         if (form.confirmar.value.trim().toUpperCase() !== "ELIMINAR") { UI.setError(root, "confirmar", "Escribe la palabra ELIMINAR para continuar."); return form.confirmar.focus(); }
         var b = root.querySelector("#del-btn"); b.disabled = true; b.textContent = "Eliminando…";
-        AR.session.deleteAccount().then(function () { AR.router.go("#/login", { replace: true }); AR.snack.show("Eliminamos tu cuenta y tus datos."); })
+        AR.session.deleteAccount().then(function () { AR.router.go("#/bienvenida", { replace: true }); AR.snack.show("Eliminamos tu cuenta y tus datos."); })
           .catch(function (er) { b.disabled = false; b.textContent = "Eliminar mi cuenta"; AR.snack.show(er.message || "No pudimos eliminar tu cuenta."); });
       });
     }

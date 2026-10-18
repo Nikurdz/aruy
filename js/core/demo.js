@@ -24,7 +24,7 @@
     el.addEventListener("click", function (e) {
       var b = e.target.closest("[data-d]"); if (!b) return; var k = b.getAttribute("data-d");
       if (k === "con" || k === "pre") { AR.sheet.close(); AR.session.logout(); AR.session.demo(k === "con" ? "contratante" : "prestador").then(function () { AR.repo.invalidar(); AR.router.go(AR.session.home(), { replace: true }); }); }
-      if (k === "out") { AR.sheet.close(); AR.session.logout(); AR.router.go("#/login", { replace: true }); }
+      if (k === "out") { AR.sheet.close(); AR.session.logout(); AR.router.go("#/bienvenida", { replace: true }); }
       if (k === "cache") { AR.repo.resetCache(); AR.snack.show("Caché local vaciada."); }
       if (k === "reset") { AR.api._reset(); AR.db.wipe(); AR.photos.wipe().then(function () { try { sessionStorage.clear(); } catch (x) { /* sin sessionStorage */ } location.hash = ""; location.reload(); }); }
     });

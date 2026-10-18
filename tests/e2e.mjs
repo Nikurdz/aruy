@@ -20,20 +20,30 @@ const noErrors = (page) => assert(page.errors.length === 0, "errores de JavaScri
 console.log("Aruy · e2e");
 
 /* ---------------------------------------------------------------- acceso */
-await section("Splash lleva al login y el login no muestra navegación", async () => {
+await section("Splash lleva a la bienvenida y esta no muestra navegación", async () => {
   const p = await newPage(env.browser);
   await p.goto(env.base);
-  await p.waitForFunction(() => location.hash === "#/login", null, { timeout: 6000 });
-  await p.waitForFunction(() => AR.rendered === "#/login");
-  check((await p.title()).startsWith("Iniciar sesión"), "título del login");
-  check(await p.locator("#shell[data-nav=none]").count() === 1, "el login no debe mostrar navegación");
+  await p.waitForFunction(() => location.hash === "#/bienvenida", null, { timeout: 6000 });
+  await p.waitForFunction(() => AR.rendered === "#/bienvenida");
+  check((await p.title()).startsWith("Bienvenida"), "título de la bienvenida");
+  check(await p.locator("#shell[data-nav=none]").count() === 1, "la bienvenida no debe mostrar navegación");
   check(await p.locator("#nav .nav-item").count() === 0, "sin ítems de navegación");
+  check((await text(p, "h1")).includes("Aruy"), "presenta Aruy");
+  check(await p.locator(".welcome-mosaic img").count() === 3, "tres fotos de trabajos");
+  check(await p.locator("#w-crear").isVisible() && await p.locator("#w-entrar").isVisible(), "botones Crear cuenta e Iniciar sesión a la vista");
+  const imgs = await p.$$eval(".welcome-mosaic img", (l) => l.map((i) => i.complete && i.naturalWidth > 0));
+  check(imgs.every(Boolean), "las fotos cargan");
+  await p.click("#w-entrar"); await p.waitForFunction(() => AR.rendered === "#/login");
+  check(await p.locator("[data-demo]").count() === 2, "Iniciar sesión muestra las dos cuentas de ejemplo");
+  check(await p.locator("#login-form").isHidden(), "el formulario de correo está plegado");
+  await p.click("#show-form"); check(await p.locator("#login-form").isVisible(), "se despliega el formulario");
   noErrors(p); await p.ctx.close();
 });
 
 await section("Login: validación, credenciales incorrectas y entrada correcta", async () => {
   const p = await newPage(env.browser);
   await open(p, env.base);
+  await p.click("#show-form");
   await p.click("#login-btn");
   check(await p.locator('[data-field=correo].has-error').count() === 1, "error de correo vacío");
   await p.fill("#correo", "no-es-correo"); await p.click("#login-btn");
@@ -271,10 +281,10 @@ await section("Editar perfil, cerrar sesión y eliminar cuenta", async () => {
   await p.click("#pf-save"); await p.waitForFunction(() => AR.rendered === "#/perfil");
   check((await text(p, "h1")).includes("Nombre Cambiado"), "perfil actualizado");
   check(await p.locator("a.verify-nudge").count() === 1, "invita a verificar la cuenta");
-  await p.click("#pf-out"); await p.click('[data-ans="yes"]'); await p.waitForFunction(() => location.hash === "#/login");
+  await p.click("#pf-out"); await p.click('[data-ans="yes"]'); await p.waitForFunction(() => location.hash === "#/bienvenida");
   await p.evaluate(() => AR.session.login("borrar@prueba.ec", "Aruy#Prueba1")); await go(p, "#/eliminar");
   await p.fill("#confirmar", "mal"); await p.click("#del-btn"); check(await p.locator(".has-error").count() === 1, "exige escribir ELIMINAR");
-  await p.fill("#confirmar", "eliminar"); await p.click("#del-btn"); await p.waitForFunction(() => location.hash === "#/login", null, { timeout: 8000 });
+  await p.fill("#confirmar", "eliminar"); await p.click("#del-btn"); await p.waitForFunction(() => location.hash === "#/bienvenida", null, { timeout: 8000 });
   const res = await p.evaluate(() => AR.session.login("borrar@prueba.ec", "Aruy#Prueba1").then(() => "entró", (e) => e.message));
   check(res.includes("no coinciden"), "la cuenta eliminada ya no entra");
   noErrors(p); await p.ctx.close();
@@ -401,6 +411,76 @@ await section("Sin conexión: aviso, acciones que necesitan red fallan con mensa
   check(await p.locator("#banner:not([hidden])").count() === 1, "aviso de conexión");
   await p.click("#tab-opiniones"); await p.waitForSelector(".review", { timeout: 6000 }).catch(() => {});
   await p.evaluate(() => AR.net.setMode("online"));
+  noErrors(p); await p.ctx.close();
+});
+
+await section("Invitado: explora sin cuenta, datos difuminados y pide cuenta al tocar", async () => {
+  const p = await newPage(env.browser);
+  await open(p, env.base, { hash: "#/bienvenida" });
+  await p.click("#w-explorar"); await p.waitForFunction(() => AR.rendered === "#/inicio");
+  check(await p.locator("#nav .nav-item").count() === 3, "menú del invitado: Inicio, Buscar y Crear cuenta");
+  check((await p.locator("#nav .nav-item").last().innerText()).includes("Crear cuenta"), "enlace Crear cuenta en el menú");
+  await settled(p);
+  check(await p.locator(".svc-row.is-locked, .svc-card.is-locked").count() > 3, "tarjetas bloqueadas");
+  const html = await p.evaluate(() => document.getElementById("main").innerHTML);
+  check(!/Karen Bastidas|Hernán Yánez|Patricio Almeida/.test(html), "los nombres reales no llegan a la pantalla");
+  check(await p.locator(".lock").count() > 3, "datos difuminados con relleno");
+  await p.locator(".svc-card").first().click();
+  await p.waitForSelector(".sheet"); check((await text(p, ".sheet")).includes("Crea tu cuenta para ver los detalles"), "hoja de crear cuenta");
+  check(await p.evaluate(() => location.hash) === "#/inicio", "no abrió el detalle");
+  await p.click(".sheet [data-close]"); await p.waitForTimeout(300);
+  await p.locator("[data-fav]").first().click(); await p.waitForSelector(".sheet"); await p.click(".sheet [data-close]"); await p.waitForTimeout(300);
+  // buscar también funciona (categorías y filtros), con filas bloqueadas y anuncio
+  await p.click('#nav a[href="#/buscar"]'); await p.waitForFunction(() => AR.rendered === "#/buscar"); await settled(p);
+  check(await p.locator(".svc-row.is-locked").count() > 4, "resultados bloqueados en Buscar");
+  // por URL no se entra al detalle, ni a guardados ni al perfil
+  for (const h of ["#/servicio/s_p7_1", "#/guardados", "#/perfil", "#/prestador/p7"]) {
+    await go(p, h, "#/login"); check((await p.evaluate(() => location.hash)).startsWith("#/login"), "el invitado no entra a " + h);
+  }
+  // tras iniciar sesión vuelve a lo que quería abrir
+  await go(p, "#/inicio"); await p.locator(".svc-card").first().click(); await p.waitForSelector(".sheet");
+  await p.click('.sheet [data-go="#/login"]'); await p.waitForFunction(() => AR.rendered === "#/login");
+  await p.click('[data-demo="contratante"]');
+  await p.waitForFunction(() => /^#\/servicio\//.test(location.hash), null, { timeout: 8000 });
+  check(await p.evaluate(() => AR.session.isGuest()) === false, "ya no es invitado");
+  noErrors(p); await p.ctx.close();
+});
+
+await section("Anuncios: rotulados «Auspiciado», cerrables y solo donde corresponde", async () => {
+  const p = await newPage(env.browser);
+  await open(p, env.base, { login: "contratante", hash: "#/inicio" }); await settled(p);
+  check(await p.locator("aside.ad").count() === 1, "un solo anuncio en Inicio");
+  check((await text(p, "aside.ad")).includes("Auspiciado"), "rótulo Auspiciado");
+  check((await p.locator("aside.ad").getAttribute("aria-label")).startsWith("Publicidad"), "nombre accesible");
+  await p.click("[data-ad-why]"); await p.waitForSelector(".sheet"); check((await text(p, ".sheet")).includes("no ven tus datos"), "explica por qué"); await p.click(".sheet [data-close]"); await p.waitForTimeout(300);
+  const hitbox = await p.locator("[data-ad-close]").boundingBox(); check(hitbox.width >= 47.5 && hitbox.height >= 47.5, "botón de cerrar de 48 px");
+  await go(p, "#/buscar"); await settled(p);
+  check(await p.locator(".list-flat > aside.ad").count() === 1, "un anuncio en Buscar");
+  const pos = await p.evaluate(() => [...document.querySelector(".list-flat").children].findIndex((e) => e.matches("aside.ad")));
+  check(pos === 4, "después del 4.º resultado: " + pos);
+  await p.click("[data-ad-close]"); check(await p.locator("aside.ad").count() === 0, "se oculta con la ×");
+  await go(p, "#/inicio"); await settled(p);
+  check(await p.locator("aside.ad").count() === 1, "otro anunciante distinto toma su lugar");
+  for (const h of ["#/servicio/s_p7_1", "#/servicios/nuevo".replace("servicios", "buscar")]) { /* detalle y editor sin anuncios (el editor es del prestador) */ }
+  await go(p, "#/servicio/s_p7_1"); await settled(p); check(await p.locator("aside.ad").count() === 0, "el detalle no lleva anuncios");
+  await p.evaluate(() => { AR.session.logout(); return AR.session.demo("prestador"); }); await go(p, "#/servicios/nuevo");
+  check(await p.locator("aside.ad").count() === 0, "el editor no lleva anuncios");
+  noErrors(p); await p.ctx.close();
+});
+
+await section("Fotos reales: ninguna imagen del catálogo queda rota", async () => {
+  const p = await newPage(env.browser);
+  await open(p, env.base, { login: "contratante", hash: "#/inicio" }); await settled(p);
+  await p.evaluate(async () => { for (const i of document.querySelectorAll("img")) { i.loading = "eager"; } await new Promise((r) => setTimeout(r, 1200)); });
+  for (const h of ["#/inicio", "#/buscar", "#/servicio/s_p13_1", "#/prestador/p20"]) {
+    await go(p, h); await settled(p); await p.waitForTimeout(500);
+    await p.evaluate(() => { document.querySelectorAll("img").forEach((i) => { i.loading = "eager"; }); });
+    await p.waitForTimeout(1200);
+    const bad = await p.$$eval("img", (l) => l.filter((i) => i.getAttribute("src") && !i.src.startsWith("data:") && !(i.complete && i.naturalWidth > 0)).map((i) => i.src));
+    check(bad.length === 0, "imágenes rotas en " + h + ": " + bad.slice(0, 3).join(", "));
+    const real = await p.$$eval("img", (l) => l.filter((i) => /assets\/trabajos\//.test(i.src)).length);
+    check(real > 0, "hay fotos reales en " + h);
+  }
   noErrors(p); await p.ctx.close();
 });
 

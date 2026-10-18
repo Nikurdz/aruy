@@ -7,7 +7,7 @@
 
   function afterLogin(user, next) {
     if (!user.verificado) return AR.router.go("#/verificar", { replace: true });
-    AR.router.go(next || AR.session.home(), { replace: true });
+    AR.router.go(next || AR.session.takeNext() || AR.session.home(), { replace: true });
   }
 
   /* ---------- Splash: el hilo dibuja la «A» una sola vez ---------- */
@@ -30,37 +30,58 @@
     mount: function (root) {
       try { sessionStorage.setItem("aruy.splash", "1"); } catch (e) { /* sin sessionStorage */ }
       var done = false;
-      function next() { if (done) return; done = true; AR.router.go(AR.session.isLoggedIn() ? AR.session.home() : "#/login", { replace: true }); }
+      function next() { if (done) return; done = true; AR.router.go(AR.session.isLoggedIn() ? AR.session.home() : AR.session.entry(), { replace: true }); }
       var t = setTimeout(next, U.reducedMotion() ? 500 : 2100);
       root.querySelector("[data-skip]").addEventListener("click", function () { clearTimeout(t); next(); });
       root.querySelector(".splash").addEventListener("click", function () { clearTimeout(t); next(); });
     }
   };
 
-  /* ---------- Login ---------- */
-  V.login = {
-    title: "Iniciar sesión",
+  /* ---------- Bienvenida: presenta Aruy y pregunta si crear cuenta o iniciar sesión ---------- */
+  V.bienvenida = {
+    title: "Bienvenida",
     bar: { hidden: true },
     nav: false,
+    render: function () {
+      var fotos = ["foto:plomeria:1", "foto:belleza:2", "foto:pintura:1"];
+      var ads = AR.seed.auspiciantes.slice(0, 3).map(function (a) { return a.nombre; });
+      return html`<section class="welcome" aria-labelledby="w-title">
+        <div class="welcome-mosaic" aria-hidden="true">${fotos.map(function (f, i) { return html`<span class="media wm-${i}">${AR.photoImg(f, "", "", 600, 600)}</span>`; })}</div>
+        <div class="tejido tejido--lg welcome-band" aria-hidden="true"></div>
+        <div class="welcome-body">
+          <span class="welcome-mark">${UI.mark(40)}</span>
+          <h1 class="t-display" id="w-title">Aruy</h1>
+          <p class="t-title-l welcome-lead">Encuentra a quien necesitas, cerca de ti.</p>
+          <p class="t-body-l muted measure">Conecta a personas que ofrecen un servicio con quienes lo necesitan en Quito: plomería, electricidad, limpieza, belleza y más. Ves su trabajo y los contactas directo por WhatsApp.</p>
+        </div>
+        <div class="welcome-cta" role="group" aria-label="Empezar">
+          <p class="t-title-m">¿Quieres crear una cuenta o ya tienes una?</p>
+          <a class="btn btn-filled btn-lg btn-block" id="w-crear" href="#/registro">Crear cuenta</a>
+          <a class="btn btn-outlined btn-lg btn-block" id="w-entrar" href="#/login">Iniciar sesión</a>
+          <button type="button" class="btn btn-text btn-block" id="w-explorar">Explorar sin cuenta</button>
+          <p class="t-body-m muted welcome-spons">Con el apoyo de ${ads.join(", ")}.</p>
+        </div>
+      </section>`;
+    },
+    mount: function (root) {
+      root.querySelector("#w-explorar").addEventListener("click", function () { AR.session.guest(); AR.router.go("#/inicio", { replace: true }); });
+    }
+  };
+
+  /* ---------- Login: primero las cuentas de ejemplo; el formulario de correo se despliega aparte ---------- */
+  V.login = {
+    title: "Iniciar sesión",
+    bar: { title: "", back: true },
+    nav: false,
     render: function (ctx) {
-      var next = safeNext(ctx.query.next);
       return html`<div class="auth page page--narrow">
-        <div class="tejido tejido--lg auth-band" aria-hidden="true"></div>
         <header class="auth-head">
-          <span class="auth-mark">${UI.mark(44)}</span>
-          <h1 class="t-display">Entra a Aruy</h1>
-          <p class="t-body-l muted measure">Encuentra a quien necesitas o muestra tu trabajo a quienes te buscan.</p>
+          <h1 class="t-display">Iniciar sesión</h1>
+          <p class="t-body-l muted measure">Recorre Aruy con una cuenta de ejemplo o entra con tu correo.</p>
         </header>
-        <form id="login-form" class="stack" novalidate>
-          <p class="form-error" id="login-error" role="alert">${icon("alert", "ic-s")}<span></span></p>
-          ${UI.field({ id: "correo", label: "Correo", type: "email", autocomplete: "username", inputmode: "email", enterkeyhint: "next", placeholder: "nombre@correo.com", spellcheck: false, lead: "mail" })}
-          ${UI.field({ id: "clave", label: "Contraseña", type: "password", autocomplete: "current-password", enterkeyhint: "go", placeholder: "Tu contraseña", trail: { icon: "eye", label: "Mostrar contraseña" }, lead: "lock" })}
-          <a class="auth-link" href="#/recuperar">¿Olvidaste tu contraseña?</a>
-          <button type="submit" class="btn btn-filled btn-lg btn-block" id="login-btn">Iniciar sesión</button>
-        </form>
         <section class="demo-accounts" aria-labelledby="demo-t">
-          <h2 class="t-title-m" id="demo-t">Probar con una cuenta de ejemplo</h2>
-          <p class="t-body-m muted">Es un prototipo: entra sin escribir nada y mira cada rol.</p>
+          <h2 class="t-title-m" id="demo-t">Cuentas de ejemplo</h2>
+          <p class="t-body-m muted">Es un prototipo: entra con un toque y mira cada rol.</p>
           <div class="demo-grid">
             <button type="button" class="demo-card" data-demo="contratante">
               <span class="demo-ic">${icon("search", "ic-l")}</span>
@@ -72,13 +93,28 @@
             </button>
           </div>
         </section>
+        <p class="form-error" id="login-error" role="alert">${icon("alert", "ic-s")}<span></span></p>
+        <button type="button" class="btn btn-outlined btn-lg btn-block" id="show-form" aria-expanded="false" aria-controls="login-form">Entrar con mi correo</button>
+        <form id="login-form" class="stack" novalidate hidden>
+          ${UI.field({ id: "correo", label: "Correo", type: "email", autocomplete: "username", inputmode: "email", enterkeyhint: "next", placeholder: "nombre@correo.com", spellcheck: false, lead: "mail" })}
+          ${UI.field({ id: "clave", label: "Contraseña", type: "password", autocomplete: "current-password", enterkeyhint: "go", placeholder: "Tu contraseña", trail: { icon: "eye", label: "Mostrar contraseña" }, lead: "lock" })}
+          <a class="auth-link" href="#/recuperar">¿Olvidaste tu contraseña?</a>
+          <button type="submit" class="btn btn-filled btn-lg btn-block" id="login-btn">Iniciar sesión</button>
+        </form>
         <p class="auth-foot t-body-l">¿No tienes cuenta? <a href="#/registro">Crear cuenta</a></p>
       </div>`;
     },
     mount: function (root, ctx) {
-      var next = safeNext(ctx.query.next), form = root.querySelector("#login-form"), err = root.querySelector("#login-error"), btn = root.querySelector("#login-btn");
+      var next = safeNext(ctx.query.next), form = root.querySelector("#login-form"), err = root.querySelector("#login-error"), btn = root.querySelector("#login-btn"), toggle = root.querySelector("#show-form");
       UI.bindPasswordToggle(root, "clave");
       var state = S.idle();
+
+      function openForm(focus) {
+        form.hidden = false; toggle.setAttribute("aria-expanded", "true"); toggle.hidden = true;
+        if (focus) root.querySelector("#correo").focus();
+      }
+      toggle.addEventListener("click", function () { openForm(true); });
+      if (ctx.query.modo === "correo") openForm(false);
 
       /* UsuarioUiState: la pantalla se pinta según el estado, con `match` exhaustivo */
       function set(st) {
@@ -257,7 +293,7 @@
           <p class="t-body-l">Ahora las demás personas pueden confiar en tu perfil.</p>
           <button type="button" class="btn btn-filled btn-lg" id="go-on">Continuar</button></div>`);
         var b = root.querySelector("#go-on"); b.focus();
-        b.addEventListener("click", function () { AR.router.go(AR.session.home(), { replace: true }); });
+        b.addEventListener("click", function () { AR.router.go(AR.session.takeNext() || AR.session.home(), { replace: true }); });
         AR.a11y.say("Cuenta verificada");
       }
       boxes.forEach(function (b, i) {
@@ -276,7 +312,7 @@
       boxes[0].focus();
       root.querySelector("[data-fill]").addEventListener("click", function () { AR.config.TEST_CODE.split("").forEach(function (d, i) { boxes[i].value = d; }); submit(); });
       btn.addEventListener("click", submit);
-      root.querySelector("#later").addEventListener("click", function () { AR.router.go(AR.session.home(), { replace: true }); });
+      root.querySelector("#later").addEventListener("click", function () { AR.router.go(AR.session.takeNext() || AR.session.home(), { replace: true }); });
 
       var left = 30, rs = root.querySelector("#resend"), cnt = root.querySelector("#count"), timer = setInterval(function () {
         if (!document.body.contains(rs)) return clearInterval(timer);

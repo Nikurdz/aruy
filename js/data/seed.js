@@ -33,12 +33,21 @@ AR.seed = (function () {
     ["Mónica Salazar", "Instructora de yoga", "bienestar", "norte", "cotocollao", "l", ["Yoga para principiantes", "Vinyasa", "Clases grupales"], 7, 4.8, 66, 4],
     ["Ricardo Endara", "Fotógrafo", "fotografia", "centro", "floresta", "d", ["Retratos", "Eventos y cumpleaños", "Edición de fotos"], 9, 4.6, 37, 6],
     ["Alejandra Vinueza", "Fotógrafa", "fotografia", "valles", "chillos", "a", ["Fotos de producto", "Álbum digital"], 4, 4.1, 12, 5],
-    ["Rosa Chicaiza", "Cuidadora", "cuidado", "sur", "quitumbe", "d", ["Cuidado de adultos mayores", "Acompañamiento a citas", "Cuidado por horas"], 13, 4.9, 29, 0],
-    ["Martha Alvear", "Cuidadora", "cuidado", "centro", "sanblas", "d", ["Cuidado de niños", "Cuidado por horas", "Turnos de noche"], 6, 4.4, 17, 0],
+    ["Rosa Chicaiza", "Cuidadora", "cuidado", "sur", "quitumbe", "d", ["Cuidado de adultos mayores", "Acompañamiento a citas", "Cuidado por horas"], 13, 4.9, 29, 2],
+    ["Martha Alvear", "Cuidadora", "cuidado", "centro", "sanblas", "d", ["Cuidado de niños", "Cuidado por horas", "Turnos de noche"], 6, 4.4, 17, 2],
     ["Blanca Tigasi", "Limpieza del hogar", "limpieza", "sur", "magdalena", "d", ["Limpieza general", "Limpieza profunda"], 8, 4.5, 84, 3],
     ["Nancy Guerra", "Limpieza de oficinas", "limpieza", "norte", "carcelen", "d", ["Limpieza de oficinas", "Lavado de muebles", "Limpieza de vidrios"], 5, 4.2, 26, 3],
     ["Fanny Ojeda", "Jardinera", "otros", "valles", "tumbaco", "a", ["Mantenimiento de jardines", "Asesoría y cotización"], 6, 4.3, 15, 4]
   ];
+
+  /* Fotos libres de trabajos por categoría (assets/trabajos/<cat>-<n>.jpg; ver CREDITOS.md) */
+  var FOTOS = { plomeria: 2, electricidad: 3, albanileria: 3, pintura: 3, carpinteria: 3, limpieza: 3, belleza: 4, bienestar: 4, fotografia: 3, cuidado: 2, otros: 3 };
+  /** `n` fotos distintas de la categoría, empezando en un punto estable según la semilla. */
+  function fotos(cat, semilla, n) {
+    var total = FOTOS[cat] || 0, out = [], ini = U.hash(semilla) % Math.max(total, 1);
+    for (var k = 0; k < Math.min(n, total); k++) out.push("foto:" + cat + ":" + (((ini + k) % total) + 1));
+    return out;
+  }
 
   var MOD = { d: ["domicilio"], l: ["local"], a: ["domicilio", "local"] };
 
@@ -75,18 +84,16 @@ AR.seed = (function () {
         bio: U.pick(rr, DESC[r[2]]) + " " + r[7] + " años de experiencia.",
         servicios: r[6], portafolio: [], estado: "activo"
       };
-      for (var k = 0; k < r[10]; k++) prest.portafolio.push("art:" + r[2] + ":" + id + "-" + k);
+      prest.portafolio = fotos(r[2], id, r[10]);
       prestadores.push(prest);
 
       r[6].slice(0, 2).forEach(function (nombre, j) {
         var precio = Math.round(cat.precio[0] + rr() * (cat.precio[1] - cat.precio[0]));
-        var fotos = [];
-        var n = Math.max(r[10] ? 2 : 0, Math.min(4, r[10]));
-        for (var f = 0; f < n; f++) fotos.push("art:" + r[2] + ":" + id + "-" + j + "-" + f);
+        var fotosS = fotos(r[2], id + "-" + j, r[10] ? Math.min(3, r[10]) : 0);
         servicios.push({
           id: "s_" + id + "_" + (j + 1), prestadorId: id, titulo: nombre,
           descripcion: nombre + " en " + b.nombre + " y alrededores. " + U.pick(rr, DESC[r[2]]) + " Atiendo con cita previa por WhatsApp.",
-          categoria: r[2], precioReferencial: precio, unidad: cat.unidad, fotos: fotos,
+          categoria: r[2], precioReferencial: precio, unidad: cat.unidad, fotos: fotosS,
           disponible: prest.disponible, estado: "publicado", creadoEn: Date.now() - Math.round((20 + rr() * 300) * 86400000)
         });
       });
@@ -96,7 +103,7 @@ AR.seed = (function () {
     servicios.push({
       id: "s_p13_3", prestadorId: "p13", titulo: "Diseño de uñas",
       descripcion: "Diseños a mano alzada y decoración con piedras. Atiendo con cita previa por WhatsApp.",
-      categoria: "belleza", precioReferencial: 18, unidad: "por servicio", fotos: ["art:belleza:p13-2-0", "art:belleza:p13-2-1"],
+      categoria: "belleza", precioReferencial: 18, unidad: "por servicio", fotos: ["foto:belleza:3", "foto:belleza:2"],
       disponible: true, estado: "en_revision", motivoRevision: "Una persona reportó una de las fotos. El equipo la está revisando; tu servicio sigue visible mientras tanto.",
       creadoEn: Date.now() - 12 * 86400000
     });
@@ -128,5 +135,14 @@ AR.seed = (function () {
       fotoPerfil: null, ubicacion: "norte", barrio: "carolina", verificado: true, demo: true, prestadorId: "p13", creadoEn: Date.now() - 200 * 86400000 }
   ];
 
-  return { prestadores: data.prestadores, servicios: data.servicios, usuarios: USUARIOS, resenas: resenas };
+  /** Auspiciantes (ficticios, sin marcas reales). Se muestran como «Auspiciado», con discreción. */
+  var AUSPICIANTES = [
+    { id: "ad1", nombre: "Ferretería Cóndor", texto: "Herramientas y materiales para tu obra, con descuento en compras al por mayor.", cats: ["plomeria", "electricidad", "albanileria", "carpinteria"], tono: 0, sigla: "FC" },
+    { id: "ad2", nombre: "Pinturas Arcoíris", texto: "Pintura para interiores y fachadas, y asesoría de color gratis.", cats: ["pintura", "albanileria"], tono: 1, sigla: "PA" },
+    { id: "ad3", nombre: "Bella Insumos", texto: "Esmaltes, tintes y materiales para tu salón o tus atenciones a domicilio.", cats: ["belleza", "bienestar"], tono: 3, sigla: "BI" },
+    { id: "ad4", nombre: "Limpieza Andina", texto: "Productos de limpieza profesional para tu trabajo diario.", cats: ["limpieza", "cuidado"], tono: 2, sigla: "LA" },
+    { id: "ad5", nombre: "Hogar Seguro", texto: "Protege tu casa y tus herramientas con un seguro simple y económico.", cats: [], tono: 4, sigla: "HS" }
+  ];
+
+  return { auspiciantes: AUSPICIANTES, prestadores: data.prestadores, servicios: data.servicios, usuarios: USUARIOS, resenas: resenas };
 })();

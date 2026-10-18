@@ -71,15 +71,15 @@
   function worksPanel(p, uris) {
     if (!uris.length) return UI.empty({ art: "tela", title: "Todavía no hay fotos", text: U.firstName(p.nombre) + " aún no subió fotos de sus trabajos." });
     return html`<div class="works" role="list">${uris.map(function (u, i) {
-      return html`<button type="button" class="work" role="listitem" data-work="${i}" aria-label="Ver foto ${i + 1} de ${uris.length}"><span class="media" style="--ar:1">${AR.photoImg(u, "Foto de ejemplo del trabajo " + (i + 1) + " de " + p.nombre, "", 320, 320)}</span></button>`;
-    })}</div><p class="t-body-m muted" style="margin-top:12px">${icon("info", "ic-s")} Son ilustraciones de ejemplo, no fotos de personas reales.</p>`;
+      return html`<button type="button" class="work" role="listitem" data-work="${i}" aria-label="Ver foto ${i + 1} de ${uris.length}"><span class="media" style="--ar:1">${AR.photoImg(u, "Foto ilustrativa del trabajo " + (i + 1) + " de " + p.nombre, "", 320, 320)}</span></button>`;
+    })}</div><p class="t-body-m muted" style="margin-top:12px">${icon("info", "ic-s")} Son fotos ilustrativas de trabajos, no del prestador.</p>`;
   }
 
   function lightbox(uris, start, p) {
     var i = start;
     function body() {
       return html`<div class="stack" style="--gap:12px;padding-top:4px">
-        <div class="lb"><span class="media" style="--ar:4/3">${AR.photoImg(uris[i], "Foto de ejemplo del trabajo " + (i + 1) + " de " + p.nombre, "", 900, 675)}</span></div>
+        <div class="lb"><span class="media" style="--ar:4/3">${AR.photoImg(uris[i], "Foto ilustrativa del trabajo " + (i + 1) + " de " + p.nombre, "", 900, 675)}</span></div>
         <div class="row-flex" style="justify-content:space-between">
           <button type="button" class="icon-btn icon-btn--tonal" data-lb="-1" aria-label="Foto anterior" ${i === 0 ? raw("disabled") : ""}>${icon("back")}</button>
           <span class="t-title-m" role="status">${i + 1} de ${uris.length}</span>
@@ -135,9 +135,9 @@
       var p = s.prestador, uris = photoUris(s, p), mine = AR.session.user().prestadorId === p.id;
       var gallery = uris.length
         ? html`<div class="gallery" role="region" aria-label="Fotos del servicio, desliza para ver más" tabindex="0" id="gallery">${uris.map(function (u, i) {
-          return html`<span class="media slide" ${i === 0 ? raw('data-hero="' + U.esc(s.id) + '"') : ""} style="--ar:4/3">${AR.photoImg(u, "Foto de ejemplo " + (i + 1) + " de " + uris.length + ": " + s.titulo, "", 900, 675)}</span>`;
-        })}</div><span class="gallery-count" id="gal-count" aria-hidden="true">1 / ${uris.length}</span><span class="gallery-note">Foto de ejemplo</span>`
-        : html`<div class="gallery"><span class="media slide" data-hero="${s.id}" style="--ar:4/3">${AR.photoImg("art:" + s.categoria + ":" + s.id, "Ilustración de ejemplo: " + s.titulo, "", 900, 675)}</span></div><span class="gallery-note">Foto de ejemplo</span>`;
+          return html`<span class="media slide" ${i === 0 ? raw('data-hero="' + U.esc(s.id) + '"') : ""} style="--ar:4/3">${AR.photoImg(u, "Foto ilustrativa " + (i + 1) + " de " + uris.length + ": " + s.titulo, "", 900, 675)}</span>`;
+        })}</div><span class="gallery-count" id="gal-count" aria-hidden="true">1 / ${uris.length}</span><span class="gallery-note">Foto ilustrativa</span>`
+        : html`<div class="gallery"><span class="media slide" data-hero="${s.id}" style="--ar:4/3">${AR.photoImg("art:" + s.categoria + ":" + s.id, "Foto ilustrativa: " + s.titulo, "", 900, 675)}</span></div><span class="gallery-note">Foto ilustrativa</span>`;
       var tab = getTab(s.id);
       return html`<article class="detail" data-id="${s.id}">
         <div class="gallery-wrap">${gallery}</div>

@@ -40,7 +40,10 @@ export async function newPage(browser, o = {}) {
 export async function open(page, base, { hash = "", login = null, query = "", expect = "" } = {}) {
   await page.goto(base + "?" + query + "#/login");
   await page.waitForFunction(() => window.AR && AR.rendered);
-  if (login) {
+  if (!login || login === "invitado") await page.evaluate(() => AR.session.logout());   // sin cuenta: empezar limpio aunque la pestaña ya tuviera sesión
+  if (login === "invitado") {
+    await page.evaluate(() => AR.session.guest());
+  } else if (login) {
     await page.evaluate((r) => AR.session.demo(r), login);
     await page.evaluate(() => { AR.repo.invalidar(); });
   }

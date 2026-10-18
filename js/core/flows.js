@@ -132,6 +132,33 @@ AR.flows = (function () {
     });
   }
 
+  /* ---------- Invitado: pedir cuenta para ver los detalles ---------- */
+  function needAccount(href) {
+    if (href) AR.session.setNext(href);
+    var el = AR.sheet.show(html`<div class="stack" style="--gap:14px;padding-top:4px">
+      <span class="perm-ic">${icon("lock", "ic-l")}</span>
+      <div><h2 class="t-headline">Crea tu cuenta para ver los detalles</h2>
+        <p class="muted" style="margin-top:6px">Con tu cuenta ves precios, calificaciones y fotos de trabajos, guardas favoritos y contactas por WhatsApp. No importa si aún no la verificas.</p></div>
+      <div class="sheet-actions" style="margin-top:4px">
+        <button type="button" class="btn btn-filled btn-lg" data-go="#/registro">Crear cuenta</button>
+        <button type="button" class="btn btn-outlined" data-go="#/login">Iniciar sesión</button>
+        <button type="button" class="btn btn-text" data-close>Seguir explorando</button>
+      </div></div>`, { label: "Crea tu cuenta para ver los detalles" });
+    el.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-go]"); if (!b) return;
+      var to = b.getAttribute("data-go"); AR.sheet.close(); AR.router.go(to);
+    });
+  }
+
+  /* ---------- Anuncios ---------- */
+  function adInfo() {
+    AR.sheet.show(html`<div class="stack" style="--gap:12px;padding-top:4px">
+      <h2 class="t-headline">¿Por qué veo anuncios?</h2>
+      <p class="t-body-l">Los auspiciantes ayudan a que Aruy sea gratis para quienes buscan y quienes ofrecen servicios. Los anuncios van siempre marcados como «Auspiciado» y nunca cambian el orden de los resultados.</p>
+      <p class="t-body-l">Los auspiciantes no ven tus datos ni tus contactos. Puedes ocultar cada anuncio con la «×».</p>
+      <button type="button" class="btn btn-filled" data-close>Entendido</button></div>`, { label: "Por qué veo anuncios" });
+  }
+
   /* ---------- Agregar foto con etiquetas de IA (sección 6) ---------- */
   function addPhoto(o) {
     o = o || {};
@@ -146,9 +173,9 @@ AR.flows = (function () {
           <button type="button" class="opt" data-src="camara">${icon("camera")}<span class="grow">Tomar foto<span class="sub">Usa la cámara de tu teléfono</span></span></button>
           <button type="button" class="opt" data-src="galeria">${icon("image")}<span class="grow">Elegir de la galería<span class="sub">Tú eliges cada foto</span></span></button>
         </div>
-        <div><b class="t-title-m">O prueba con una foto de ejemplo</b>
+        <div><b class="t-title-m">O prueba con una foto de trabajo</b>
           <div class="samples">${AR.photos.muestras.map(function (m) {
-            return html`<button type="button" class="sample" data-sample="${m.id}" aria-label="Foto de ejemplo: ${m.nombre}"><span class="media" style="--ar:1">${AR.photoImg(m.uri, "", "", 200, 200)}</span><span class="t-label-m clamp-2">${m.nombre}</span></button>`;
+            return html`<button type="button" class="sample" data-sample="${m.id}" aria-label="Foto de trabajo: ${m.nombre}"><span class="media" style="--ar:1">${AR.photoImg(m.uri, "", "", 200, 200)}</span><span class="t-label-m clamp-2">${m.nombre}</span></button>`;
           })}</div></div>
         <button type="button" class="btn btn-text" data-close>Cancelar</button></div>`;
     }
@@ -252,5 +279,5 @@ AR.flows = (function () {
     return el;
   }
 
-  return { contact: contact, rate: rate, report: report, block: block, share: share, copy: copy, addPhoto: addPhoto, defaultMessage: defaultMessage };
+  return { needAccount: needAccount, adInfo: adInfo, contact: contact, rate: rate, report: report, block: block, share: share, copy: copy, addPhoto: addPhoto, defaultMessage: defaultMessage };
 })();

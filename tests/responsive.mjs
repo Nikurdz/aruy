@@ -10,8 +10,9 @@ const VIEWPORTS = [[320, 568], [360, 640], [360, 800], [390, 844], [412, 915], [
 const CON = [["#/inicio", "contratante"], ["#/buscar", "contratante"], ["#/buscar?vista=mapa", "contratante"], ["#/guardados", "contratante"], ["#/servicio/s_p20_1", "contratante"],
   ["#/prestador/p20", "contratante"], ["#/perfil", "contratante"], ["#/ajustes", "contratante"], ["#/permisos", "contratante"]];
 const PRE = [["#/panel", "prestador"], ["#/servicios", "prestador"], ["#/portafolio", "prestador"], ["#/servicios/nuevo", "prestador"], ["#/perfil", "prestador"]];
-const PUB = [["#/login", null], ["#/registro", null], ["#/registro?paso=2&rol=prestador", null]];
-const ROUTES = [...PUB, ...CON, ...PRE];
+const PUB = [["#/bienvenida", null], ["#/login", null], ["#/registro", null], ["#/registro?paso=2&rol=prestador", null]];
+const GUEST = [["#/inicio", "invitado"], ["#/buscar", "invitado"]];
+const ROUTES = [...PUB, ...CON, ...PRE, ...GUEST];
 
 /* Revisión dentro de la página: devuelve la lista de problemas */
 function inspect() {
@@ -26,7 +27,8 @@ function inspect() {
   /* navegación según el ancho */
   if (shell.getAttribute("data-nav") !== "none") {
     const r = nav.getBoundingClientRect(), items = [...nav.querySelectorAll(".nav-item")];
-    if (items.length !== 4 || items.some((i) => !visible(i))) issues.push("navegación incompleta");
+    const esperados = document.body.classList.contains("is-guest") ? 3 : 4;
+    if (items.length !== esperados || items.some((i) => !visible(i))) issues.push("navegación incompleta");
     if (vw < 600 && !(r.top > vh * 0.5 && Math.abs(r.width - vw) < 2)) issues.push("en compacto la navegación debe ir abajo y a todo el ancho");
     if (vw >= 600 && vw < 840 && !(Math.abs(r.width - 88) < 2 && r.left < 2)) issues.push("en mediano debe haber un riel de 88 px: " + Math.round(r.width));
     if (vw >= 840 && !(Math.abs(r.width - 288) < 2 && r.left < 2)) issues.push("en expandido debe haber un panel de 288 px: " + Math.round(r.width));
@@ -73,7 +75,7 @@ for (const dark of [false, true]) {
     const page = await newPage(env.browser, { w, h, dark });
     let first = true;
     for (const [hash, user] of ROUTES) {
-      if (dark && !["#/login", "#/inicio", "#/buscar", "#/servicio/s_p20_1", "#/panel", "#/perfil"].includes(hash)) continue;
+      if (dark && !["#/bienvenida", "#/login", "#/inicio", "#/buscar", "#/servicio/s_p20_1", "#/panel", "#/perfil"].includes(hash)) continue;
       total++;
       try {
         if (first || page._user !== user) {

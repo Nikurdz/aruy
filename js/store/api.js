@@ -15,8 +15,10 @@ AR.api = (function () {
 
   var clone = function (o) { return o == null ? o : JSON.parse(JSON.stringify(o)); };
 
+  var SEED_VERSION = 2;
+
   function seedIfNeeded() {
-    if (srv.kv.get("seeded")) return;
+    if (srv.kv.get("seeded") === SEED_VERSION) return;   // si cambia la versión se vuelven a escribir los datos de ejemplo (p. ej. fotos nuevas)
     T.prestadores.putAll(clone(AR.seed.prestadores));
     T.servicios.putAll(clone(AR.seed.servicios));
     T.usuarios.putAll(clone(AR.seed.usuarios));
@@ -28,7 +30,7 @@ AR.api = (function () {
       { id: "rp_1", usuarioId: "u_demo_contratante", tipo: "resena", objetivo: "Opinión sin relación con el servicio", motivo: "Contenido inapropiado", detalle: "", creadoEn: Date.now() - 6 * 86400000, estado: "resuelto", resolucion: "Retiramos la opinión porque incumplía las normas." },
       { id: "rp_2", usuarioId: "u_demo_contratante", tipo: "prestador", objetivo: "Perfil con fotos de otra persona", motivo: "Las fotos no son suyas", detalle: "Parecen sacadas de internet.", creadoEn: Date.now() - 3600000, estado: "en_revision" }
     ]);
-    srv.kv.set("seeded", 1);
+    srv.kv.set("seeded", SEED_VERSION);
   }
   seedIfNeeded();
 

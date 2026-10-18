@@ -116,7 +116,9 @@
         } else if (f.vista === "mapa") {
           results.innerHTML = String(mapHtml(list, ref));
         } else {
-          results.innerHTML = String(html`<div class="list-flat">${list.map(UI.serviceRow)}</div>`);
+          var rows = list.map(UI.serviceRow);
+          if (rows.length > 4) rows.splice(4, 0, UI.ad(UI.pickAd(f.cat, "buscar" + f.cat)));
+          results.innerHTML = AR.render(html`<div class="list-flat">${rows}</div>`);
         }
         AR.photos.hydrate(results);
       }

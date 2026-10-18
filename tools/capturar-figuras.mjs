@@ -45,10 +45,12 @@ async function compose(file, items, { title } = {}) {
 
 console.log("Capturando…");
 
-/* Figura 1 · Login */
-const f1a = await shoot("f1-claro", { hash: "#/login" });
-const f1b = await shoot("f1-oscuro", { hash: "#/login", dark: true });
-await compose(path.join(OUT, "figura-1-login.png"), [{ file: f1a, label: "Modo claro" }, { file: f1b, label: "Modo oscuro", dark: true }]);
+/* Figura 1 · Bienvenida e inicio de sesión */
+const f1a = await shoot("f1-bienvenida", { hash: "#/bienvenida" });
+const f1b = await shoot("f1-login", { hash: "#/login" });
+const f1c = await shoot("f1-oscuro", { hash: "#/bienvenida", dark: true });
+await compose(path.join(OUT, "figura-1-login.png"), [
+  { file: f1a, label: "Bienvenida: crear cuenta o iniciar sesión" }, { file: f1b, label: "Iniciar sesión: cuentas de ejemplo" }, { file: f1c, label: "Bienvenida en modo oscuro", dark: true }]);
 
 /* Figura 2 · Home con los tres estados de ServicioUiState */
 const f2a = await shoot("f2-loading", { login: "contratante", hash: "#/buscar", steps: async (p) => {

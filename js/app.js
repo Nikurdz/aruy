@@ -4,7 +4,7 @@
   if (!h || h === "#" || h === "#/") {
     var seen = false;
     try { seen = sessionStorage.getItem("aruy.splash") === "1"; } catch (e) { /* sin sessionStorage */ }
-    location.replace(AR.session.isLoggedIn() ? AR.session.home() : (seen ? "#/login" : "#/splash"));
+    location.replace(AR.session.isLoggedIn() ? AR.session.home() : (seen ? AR.session.entry() : "#/splash"));
   }
   AR.router.start();
 

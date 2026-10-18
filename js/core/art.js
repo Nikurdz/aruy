@@ -1,6 +1,6 @@
 /** Aruy · Ilustraciones de reemplazo.
    Las fotos de los prestadores de ejemplo son composiciones geométricas de tejido (aguayo) generadas en el navegador:
-   no hay fotografías de terceros ni imágenes de IA. Cada una se rotula "Foto de ejemplo" donde aparece. */
+   no hay fotografías de terceros ni imágenes de IA. Sirven de respaldo cuando un servicio no tiene foto real (assets/trabajos). */
 (function () {
   var SCHEMES = [
     { bg: "#2B3990", b1: "#1F2A75", b2: "#B0235B", acc: "#F2B52E", glyph: "#FFFFFF" },

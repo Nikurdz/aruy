@@ -8,12 +8,13 @@ AR.router = (function () {
 
   var ROUTES = [
     { path: "/splash", view: "splash", public: true },
+    { path: "/bienvenida", view: "bienvenida", public: true },
     { path: "/login", view: "login", public: true },
     { path: "/registro", view: "registro", public: true },
     { path: "/recuperar", view: "recuperar", public: true },
     { path: "/verificar", view: "verificar" },
-    { path: "/inicio", view: "home", roles: CON, tab: "inicio", root: true },
-    { path: "/buscar", view: "buscar", roles: CON, tab: "buscar", root: true },
+    { path: "/inicio", view: "home", roles: CON, tab: "inicio", root: true, guest: true },
+    { path: "/buscar", view: "buscar", roles: CON, tab: "buscar", root: true, guest: true },
     { path: "/guardados", view: "guardados", roles: CON, tab: "guardados", root: true },
     { path: "/servicio/:id", view: "detalle", roles: null, tab: "inicio" },
     { path: "/prestador/:id", view: "prestadorPublico", roles: null, tab: "inicio" },
@@ -63,7 +64,7 @@ AR.router = (function () {
     });
   }
 
-  function home() { return S.isLoggedIn() ? S.home() : "#/login"; }
+  function home() { return S.user() ? S.home() : "#/bienvenida"; }
 
   function back(o) {
     if (o && o.silent) silentNext = true;
@@ -82,11 +83,13 @@ AR.router = (function () {
     var loc = parse(), hit = match(loc.path), user = S.user();
 
     /* Entrada y guardas */
-    if (loc.path === "/" || !hit) return go(user ? S.home() : "#/login", { replace: true });
+    if (loc.path === "/" || !hit) return go(user ? S.home() : "#/bienvenida", { replace: true });
     var route = hit.route;
-    if (route.public && user && route.view !== "splash") return go(S.home(), { replace: true });
+    /* El invitado (sin cuenta) solo recorre Inicio y Buscar; lo demás lo manda a entrar o crear cuenta */
+    if (route.public && user && !user.guest && route.view !== "splash") return go(S.home(), { replace: true });
     if (!route.public && !user) return go("#/login?next=" + encodeURIComponent(loc.hash), { replace: true });
-    if (!route.public && route.roles && route.roles.indexOf(user.rol) < 0) return go("#/acceso-denegado", { replace: true });
+    if (!route.public && user.guest && !route.guest) { S.setNext(loc.hash); return go("#/login?next=" + encodeURIComponent(loc.hash), { replace: true }); }
+    if (!route.public && !user.guest && route.roles && route.roles.indexOf(user.rol) < 0) return go("#/acceso-denegado", { replace: true });
 
     var view = V[route.view];
     if (!view) view = V.noEncontrada;
@@ -121,6 +124,7 @@ AR.router = (function () {
       var barDesc = typeof view.bar === "function" ? view.bar(ctx) : view.bar;
       AR.shell.setBar(barDesc);
       AR.shell.setNav(view.nav === false || route.public || (!user.verificado && route.view === "verificar") ? null : route.tab || "");
+      document.body.classList.toggle("is-guest", !!(user && user.guest));
       /* Cada pantalla vive en su propio contenedor: al navegar se descarta con sus eventos, y `root.isConnected` dice si la vista sigue activa */
       var wrap = document.createElement("div");
       wrap.className = "view"; wrap.style.display = "contents";
@@ -161,6 +165,21 @@ AR.router = (function () {
         var a = e.target.closest("[data-hero-id]");
         if (a) router._hero = { id: a.getAttribute("data-hero-id"), el: a.querySelector("[data-hero]") };
       }, true);
+      /* Invitado: tocar un servicio, un perfil o un corazón abre «Crea tu cuenta» en vez de entrar (también dentro de las hojas) */
+      function guestBlock(e) {
+        var u = S.user(); if (!u || !u.guest) return;
+        var t = e.target.closest('a[href^="#/servicio"], a[href^="#/prestador"], [data-fav]'); if (!t) return;
+        e.preventDefault(); e.stopPropagation();
+        AR.flows.needAccount(t.getAttribute("href"));
+      }
+      document.getElementById("main").addEventListener("click", guestBlock, true);
+      document.getElementById("sheet-root").addEventListener("click", guestBlock, true);
+      /* Anuncios: cerrar y «¿Por qué veo esto?» */
+      document.addEventListener("click", function (e) {
+        var c = e.target.closest("[data-ad-close]");
+        if (c) { AR.ui.hideAd(c.getAttribute("data-ad-close")); var box = c.closest(".ad"); if (box) box.remove(); AR.snack.show("Ocultamos este anuncio por ahora."); return; }
+        if (e.target.closest("[data-ad-why]")) AR.flows.adInfo();
+      });
       /* Cambiar de pestaña reemplaza la entrada del historial, como la barra de navegación de Android */
       document.getElementById("nav").addEventListener("click", function (e) {
         var a = e.target.closest("a.nav-item"); if (!a) return;

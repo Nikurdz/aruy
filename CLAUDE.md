@@ -23,6 +23,9 @@ Prototipo web estático (**HTML, CSS y JavaScript puros**, sin build ni dependen
 - **Hojas (`AR.sheet`)** agregan una entrada al historial para que Atrás las cierre. `history.back()` es asíncrono: el router y `replaceQuiet` esperan con `AR.sheet.whenIdle`. Si una hoja lleva a otra pantalla, usa `AR.router.go`, no cambies `location.hash` a mano.
 - **Layout adaptable con container queries sobre `.app`** (no con media queries de ancho), para que funcione también en la vista de dispositivo. La pantalla desplaza dentro de `#main`, no el documento.
 - **Roles:** `AR.session.allows(roles)`; contratante y prestador ven menús y rutas distintos. Publicar un servicio exige cuenta verificada.
+- **Entrada y invitado:** sin sesión se llega a `#/bienvenida` (crear cuenta, iniciar sesión, explorar sin cuenta); `AR.session.entry()` decide. El invitado (`AR.session.guest()`, solo en sessionStorage, `rol: "invitado"`) solo entra a rutas con `guest: true` en `ROUTES` (Inicio y Buscar); el resto lo manda a `#/login?next=…`. `serviceRow`/`serviceCard` lo dibujan **bloqueado** (relleno difuminado, nunca datos reales) y el router intercepta en captura los toques a servicio, perfil y corazón para abrir `AR.flows.needAccount`. En tests usa `open(page, base, { login: "invitado" })`.
+- **Anuncios:** `AR.seed.auspiciantes` (ficticios) + `UI.ad(UI.pickAd(cat, semilla))`. Siempre rotulados «Auspiciado», cerrables, uno por pantalla; no van en detalle, editor, login ni contacto.
+- **Fotos:** URI `foto:<cat>:<n>` → `assets/trabajos/<cat>-<n>.jpg` (Unsplash, ver `CREDITOS.md`; el recuento por categoría está en `FOTOS` de `js/data/seed.js`). Si cambian los datos de ejemplo sube `SEED_VERSION` en `js/store/api.js` para que los navegadores con datos viejos los reescriban.
 
 ## Convenciones no obvias
 
@@ -32,5 +35,6 @@ Prototipo web estático (**HTML, CSS y JavaScript puros**, sin build ni dependen
 - El **tejido** (banda de rombos) se usa solo en la entrada, la carga/análisis de IA y el sello de verificado. No lo uses como decoración.
 - Nada de emoji como íconos: glifos propios en `js/core/icons.js`. Las fotos de ejemplo son ilustraciones de `js/core/art.js`.
 - Un elemento `position: absolute` (p. ej. `.sr-only`) dentro de un carrusel ensancha la pantalla si el carrusel no es `position: relative`.
+- Rótulo de fotos: «Foto ilustrativa» (reales de Unsplash, no del prestador). No uses imágenes generadas por IA.
 - Prototipo seguro: los prestadores de ejemplo no tienen teléfono; «Abrir WhatsApp» solo registra el contacto.
 - Sin etiquetas en mayúsculas, sin cadenas «A · B · C», sin numeración salvo secuencias reales (el registro). Textos en español de Ecuador, tuteo, oraciones en minúscula, verbos claros.

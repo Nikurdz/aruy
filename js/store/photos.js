@@ -3,7 +3,8 @@
  *  Siguiendo las recomendaciones del documento, las fotos NO van dentro de la base de datos: se comprimen y se guardan
  *  aparte (IndexedDB) y las entidades solo conservan su URI:
  *    "idb:<id>"           foto subida por la persona (cámara o galería)
- *    "art:<cat>:<semilla>" ilustración de ejemplo generada en el navegador */
+ *    "foto:<cat>:<n>"      foto libre de trabajo (assets/trabajos/<cat>-<n>.jpg, ver CREDITOS.md)
+ *    "art:<cat>:<semilla>" ilustración de tejido generada en el navegador (respaldo) */
 AR.photos = (function () {
   var DB_NAME = "aruy-fotos", STORE = "fotos";
   var memFallback = {}, urlCache = {}, dbp = null;
@@ -77,6 +78,7 @@ AR.photos = (function () {
   /** URL síncrona para ilustraciones de ejemplo; las fotos subidas se resuelven con hydrate(). */
   function srcSync(uri, w, h) {
     if (!uri) return "";
+    if (uri.indexOf("foto:") === 0) { var f = uri.split(":"); return "assets/trabajos/" + f[1] + "-" + f[2] + ".jpg"; }
     if (uri.indexOf("art:") === 0) { var p = uri.split(":"); return AR.art.photo(p[1], p.slice(2).join(":"), w, h); }
     if (uri.indexOf("idb:") === 0) return urlCache[uri] || "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
     return uri;
@@ -104,14 +106,14 @@ AR.photos = (function () {
 
   function wipe() { urlCache = {}; memFallback = {}; return tx("readwrite", function (s) { return s ? s.clear() : null; }); }
 
-  /** Fotos de ejemplo para probar sin cámara ni galería (el análisis conoce su contenido). */
+  /** Fotos de trabajos para probar sin cámara ni galería (el análisis conoce su contenido). */
   var MUESTRAS = [
-    { id: "m1", cat: "electricidad", nombre: "Tablero eléctrico", uri: "art:electricidad:muestra-tablero" },
-    { id: "m2", cat: "plomeria", nombre: "Cambio de grifería", uri: "art:plomeria:muestra-griferia" },
-    { id: "m3", cat: "pintura", nombre: "Pared pintada", uri: "art:pintura:muestra-pared" },
-    { id: "m4", cat: "belleza", nombre: "Manicure", uri: "art:belleza:muestra-manicure" },
-    { id: "m5", cat: "carpinteria", nombre: "Mueble de cocina", uri: "art:carpinteria:muestra-cocina" },
-    { id: "m6", cat: "limpieza", nombre: "Limpieza profunda", uri: "art:limpieza:muestra-limpieza" }
+    { id: "m1", cat: "electricidad", nombre: "Tablero eléctrico", uri: "foto:electricidad:1" },
+    { id: "m2", cat: "plomeria", nombre: "Reparación de sifón", uri: "foto:plomeria:1" },
+    { id: "m3", cat: "pintura", nombre: "Pared pintada", uri: "foto:pintura:1" },
+    { id: "m4", cat: "belleza", nombre: "Manicure", uri: "foto:belleza:1" },
+    { id: "m5", cat: "carpinteria", nombre: "Corte de madera", uri: "foto:carpinteria:1" },
+    { id: "m6", cat: "limpieza", nombre: "Limpieza profunda", uri: "foto:limpieza:2" }
   ];
 
   return { compress: compress, save: save, url: url, srcSync: srcSync, hydrate: hydrate, remove: remove, wipe: wipe, sizeLabel: sizeLabel, muestras: MUESTRAS };

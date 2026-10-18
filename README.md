@@ -8,14 +8,14 @@ La app real será Kotlin + Jetpack Compose; este prototipo sirve para **diseñar
 
 - Abre `index.html` con doble clic (funciona con `file://`), o levanta el servidor de desarrollo: `node tools/serve.mjs` → http://127.0.0.1:5173/
 - En el teléfono: sirve la carpeta por la red local y abre la dirección; con http(s) la app se puede **instalar** y abrir **sin conexión**.
-- En la pantalla de entrada hay dos cuentas de ejemplo (contratante y prestador). Contraseña de ambas: `Aruy#2026`. El código de verificación de prueba es `482915` y la pantalla lo muestra rotulado como tal.
+- La primera pantalla presenta Aruy y pregunta si quieres **crear cuenta** o **iniciar sesión**; también puedes **explorar sin cuenta**. En «Iniciar sesión» hay dos cuentas de ejemplo (contratante y prestadora) y, aparte, el formulario con correo. Contraseña de ambas: `Aruy#2026`. El código de verificación de prueba es `482915` y la pantalla lo muestra rotulado como tal.
 - Agrega `?demo=1` a la dirección para mostrar el **panel de demostración**: conexión lenta, con error o sin red, cambiar de cuenta, reiniciar los datos y la **vista de teléfono, plegable o tableta** en pantallas grandes.
 
 ## Qué hay de cada funcionalidad del documento
 
 | # | Funcionalidad | Dónde |
 |---|---|---|
-| 1 | Registro, inicio de sesión y recuperación | `#/login`, `#/registro`, `#/recuperar` |
+| 1 | Registro, inicio de sesión y recuperación | `#/bienvenida`, `#/login`, `#/registro`, `#/recuperar` |
 | 2 | Roles | Elección de rol al registrarse; menú y rutas distintas por rol (`#/acceso-denegado` si se entra a lo ajeno) |
 | 3 | Gestión de perfil | `#/perfil`, `#/perfil/editar` (foto, nombre, celular, barrio, bio y experiencia) |
 | 4 | Publicación de servicios | `#/servicios`, `#/servicios/nuevo`, editar y eliminar con «Deshacer» |
@@ -37,6 +37,12 @@ La app real será Kotlin + Jetpack Compose; este prototipo sirve para **diseñar
 
 Las cinco pantallas del bosquejo (Figuras 1 a 5 del documento) son **Login**, **Home**, **Detalle del servicio**, **Publicar servicio con IA** y **Perfil**.
 
+## Invitado, anuncios y fotos
+
+- **Modo invitado** («Explorar sin cuenta»): se recorren Inicio y Buscar (categorías, filtros, mapa) con foto, título y categoría. El **nombre, la calificación y el precio se difuminan** con texto de relleno (los datos reales no llegan a la pantalla). Tocar un servicio, un perfil o un corazón abre «Crea tu cuenta para ver los detalles»; al entrar se vuelve a lo que se quería abrir. El detalle, favoritos, perfil y el resto exigen cuenta (verificada o no). Es un bloqueo de interfaz: el prototipo no tiene servidor.
+- **Anuncios de auspiciantes** (ficticios, sin marcas reales): una tarjeta compacta rotulada **«Auspiciado»** en Inicio y después del 4.º resultado de Buscar, más una línea «Con el apoyo de…» en la bienvenida. Se ocultan con la «×», explican por qué se ven («¿Por qué veo esto?») y nunca aparecen en el detalle, el editor, el login ni el contacto. No cambian el orden de los resultados.
+- **Fotos de trabajos:** fotografías libres de Unsplash en `assets/trabajos/` (2 a 4 por categoría, ver `CREDITOS.md`). Son **ilustrativas**: no son de los prestadores de ejemplo, que son ficticios. Si falta una foto se usa la ilustración de tejido de `js/core/art.js`.
+
 ## Qué es real y qué está simulado
 
 | En la app real | En este prototipo |
@@ -50,7 +56,7 @@ Las cinco pantallas del bosquejo (Figuras 1 a 5 del documento) son **Login**, **
 | Atrás predictivo, NavigationSuiteScaffold | Gesto de borde con escala; barra inferior, riel o panel lateral según el ancho |
 | Abrir WhatsApp | Hoja que muestra el mensaje y lo registra: **no se envía nada real** |
 
-Los 33 prestadores, sus servicios y opiniones son ficticios; las fotos son ilustraciones de tejido generadas en el navegador (no hay fotografías de terceros ni imágenes de IA) y se rotulan «Foto de ejemplo».
+Los 33 prestadores, sus servicios, opiniones y auspiciantes son ficticios. Las fotos de trabajos son fotografías libres de Unsplash rotuladas «Foto ilustrativa»; no hay imágenes generadas por IA.
 
 ## Diseño
 
@@ -72,6 +78,7 @@ js/data/    catalog, seed
 js/store/   db (Room), photos (IndexedDB), session, api (Retrofit), repo
 js/ml/      labeler (ML Kit simulado)
 js/views/   una vista por pantalla
+assets/     icon.svg y trabajos/ (fotos libres + CREDITOS.md)
 tests/      e2e · responsive · a11y
 tools/      serve · capturar-figuras · insertar-figuras.py · revisar · shot
 docs/       figuras/ y Proyecto_v2.docx (con las figuras insertadas)
@@ -85,7 +92,7 @@ Requieren Node 18+ y un Chrome o Edge instalado. Dependencia de desarrollo: `pla
 
 ```bash
 npm test                  # las tres suites
-npm run test:e2e          # 27 flujos: acceso, estados de carga, búsqueda, detalle, contacto, opiniones, reportes, permisos, editor con IA, roles, sin conexión, gestos, PWA
+npm run test:e2e          # 30 flujos: bienvenida, invitado, anuncios, acceso, estados de carga, búsqueda, detalle, contacto, opiniones, reportes, permisos, editor con IA, roles, sin conexión, gestos, PWA
 npm run test:responsive   # 14 tamaños × rutas × claro y oscuro: sin scroll horizontal, navegación según el ancho, controles ≥ 48 px, texto ≥ 14 px
 npm run test:a11y         # contraste AA, nombres accesibles, un h1, foco con teclado y texto al 200 %
 ```
@@ -103,5 +110,6 @@ El original no se modifica. Cada «Pantalla N» recibe un texto que cita la figu
 
 - La IA de fotos y la verificación son simulaciones; no hay servidor ni mensajes reales.
 - El mapa es un esquema de Quito, sin teselas externas, para que funcione sin conexión.
+- Las fotos de trabajos pesan ~3,7 MB (se cargan bajo demanda).
 - Las tipografías vienen de Google Fonts; sin red se usa la del sistema.
 - El service worker solo se registra con http(s); en `file://` la app funciona igual pero sin instalación.

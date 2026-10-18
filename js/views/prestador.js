@@ -77,7 +77,7 @@
   function svcOwn(s) {
     return html`<article class="svc-row own">
       <a class="svc-main" href="#/servicios/${s.id}/editar" aria-label="Editar ${s.titulo}">
-        <span class="media svc-thumb" style="--ar:1">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto de ejemplo de " + s.titulo, "", 240, 240)}</span>
+        <span class="media svc-thumb" style="--ar:1">${AR.photoImg(s.fotos[0] || ("art:" + s.categoria + ":" + s.id), "Foto ilustrativa: " + s.titulo, "", 240, 240)}</span>
         <span class="svc-text"><b class="svc-title clamp-1">${s.titulo}</b>
           <span class="svc-meta">${s.estado === "en_revision" ? html`<span class="pill pill--warn">En revisión</span>` : html`<span class="pill pill--ok">Publicado</span>`}${s.disponible ? "" : html`<span class="pill">Pausado</span>`}</span>
           <span class="svc-foot">${UI.price(s)}</span></span>
